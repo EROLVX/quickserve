@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickServe - Checkout</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <div id="toast" class="toast"></div>
+
+    <header class="app-header glass">
+      <a href="index.html" class="btn btn-ghost"
+        ><i class="fas fa-arrow-left"></i> Back</a
+      >
+      <div class="logo"><i class="fas fa-bolt"></i> QuickServe</div>
+      <div></div>
+    </header>
+
+    <main class="checkout-page">
+      <div class="card">
+        <h2><i class="fas fa-receipt"></i> Review Your Order</h2>
+        <div style="overflow-x: auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="checkoutItems">
+              <tr>
+                <td colspan="4" class="text-center text-light">
+                  Loading cart...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="checkout-total">
+          Total: <strong id="checkoutTotal">₱0.00</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fas fa-user"></i> Order Details</h2>
+        <div class="form-group">
+          <label class="form-label">Customer Name</label>
+          <input
+            type="text"
+            id="customerName"
+            class="form-input"
+            placeholder="Your name (optional)"
+          />
+        </div>
+
+        <!-- Order Type -->
+        <div class="form-group">
+          <label class="form-label">Order Type</label>
+          <div class="order-type-toggle" id="orderTypeContainer">
+            <label class="type-option">
+              <input
+                type="radio"
+                name="orderType"
+                value="dine_in"
+                checked
+                onchange="handleOrderTypeChange()"
+              />
+              <span><i class="fas fa-utensils"></i> Dine In</span>
+            </label>
+            <label class="type-option">
+              <input
+                type="radio"
+                name="orderType"
+                value="take_out"
+                onchange="handleOrderTypeChange()"
+              />
+              <span><i class="fas fa-shopping-bag"></i> Take Out</span>
+            </label>
+            <label class="type-option">
+              <input
+                type="radio"
+                name="orderType"
+                value="reservation"
+                onchange="handleOrderTypeChange()"
+              />
+              <span><i class="fas fa-calendar-check"></i> Reserve</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Reservation Fields (hidden by default) -->
+        <div id="reservationFields" style="display: none">
+          <div class="form-group">
+            <label class="form-label">Reservation Date</label>
+            <input type="date" id="reservationDate" class="form-input" min="" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reservation Time</label>
+            <input type="time" id="reservationTime" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Downpayment (30% minimum)</label>
+            <div class="downpayment-display">
+              <div class="dp-amount" id="downpaymentAmount">₱0.00</div>
+              <small class="text-light"
+                >Minimum required: <span id="minDownpayment">₱0.00</span></small
+              >
+            </div>
+            <input type="hidden" id="downpaymentValue" value="0" />
+          </div>
+          <div class="reservation-notice">
+            <i class="fas fa-info-circle"></i>
+            Your reservation will be pending admin approval. You'll receive
+            confirmation once approved.
+          </div>
+        </div>
+
+        <button
+          class="btn btn-primary btn-lg btn-disabled"
+          id="placeOrderBtn"
+          style="width: 100%; margin-top: 1rem"
+          disabled
+        >
+          <i class="fas fa-lock"></i> Cart is Empty
+        </button>
+        <div class="checkout-error" id="checkoutError">
+          <i class="fas fa-exclamation-circle"></i> Please add items to your
+          cart before placing an order.
+        </div>
+      </div>
+    </main>
+
+    <!-- Receipt Modal -->
+    <div class="modal" id="receiptModal">
+      <div class="modal-content card text-center">
+        <div id="receiptCapture" class="receipt-capture">
+          <div class="receipt-brand">
+            <i class="fas fa-bolt"></i>
+            <span>QuickServe</span>
+          </div>
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-icon"><i class="fas fa-check-circle"></i></div>
+          <h2 id="receiptTitle">Order Placed!</h2>
+          <p class="receipt-label">Your order number</p>
+          <div class="order-number-display" id="receiptOrderNumber">QS-001</div>
+          <p id="receiptType" class="text-light"></p>
+
+          <div
+            id="reservationStatus"
+            class="reservation-badge"
+            style="display: none"
+          >
+            <i class="fas fa-clock"></i> Pending Approval
+          </div>
+
+          <div id="queuePosition" class="queue-position"></div>
+
+          <div class="receipt-info">
+            <div class="receipt-row">
+              <span>Date</span>
+              <span id="receiptDate">-</span>
+            </div>
+            <div class="receipt-row">
+              <span>Time</span>
+              <span id="receiptTime">-</span>
+            </div>
+            <div
+              class="receipt-row"
+              id="receiptResDateRow"
+              style="display: none"
+            >
+              <span>Reserved For</span>
+              <span id="receiptResDate">-</span>
+            </div>
+            <div
+              class="receipt-row"
+              id="receiptDownpaymentRow"
+              style="display: none"
+            >
+              <span>Downpayment</span>
+              <span id="receiptDownpayment">-</span>
+            </div>
+          </div>
+
+          <div class="receipt-footer">
+            <p id="receiptFooterMsg">Thank you for your order!</p>
+            <small id="receiptFooterSub"
+              >Please watch the display screen for updates</small
+            >
+          </div>
+        </div>
+
+        <div class="receipt-actions">
+          <button class="btn btn-ghost" onclick="saveReceiptImage()">
+            <i class="fas fa-image"></i> Save Image
+          </button>
+          <button class="btn btn-secondary" onclick="printReceipt()">
+            <i class="fas fa-print"></i> Print
+          </button>
+          <button class="btn btn-primary" onclick="closeReceipt()">
+            <i class="fas fa-plus"></i> New Order
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/orders.js"></script>
+    <script>
+      // Set min date to today
+      document.getElementById("reservationDate").min = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      // Auto-fill customer name from active session
+      (async () => {
+        try {
+          const res = await fetch(API_BASE + "/auth.php?action=me");
+          const data = await res.json();
+          if (data.success && data.user) {
+            const nameField = document.getElementById("customerName");
+            const displayName = data.user.full_name || data.user.username || "";
+            if (nameField && displayName) {
+              nameField.value = displayName;
+              nameField.readOnly = true;
+              nameField.style.background = "var(--surface-hover, #f8fafc)";
+              nameField.style.cursor = "not-allowed";
+              nameField.title = "Logged in as " + displayName;
+              nameField.placeholder = displayName;
+            }
+          }
+        } catch (e) {
+          /* guest mode, no auto-fill */
+        }
+      })();
+    </script>
+  </body>
+</html>
+>

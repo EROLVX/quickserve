@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickServe — Login</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+
+        --danger: #ef4444;
+        --success: #22c55e;
+
+        --bg: #f4f7fb;
+        --surface: #ffffff;
+
+        --text: #0f172a;
+        --text-secondary: #475569;
+
+        --border: #dbe4f0;
+
+        --radius: 14px;
+        --radius-xl: 20px;
+
+        --shadow-lg:
+          0 20px 25px -5px rgba(15, 23, 42, 0.1),
+          0 8px 10px -6px rgba(15, 23, 42, 0.08);
+      }
+
+      [data-theme="dark"] {
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+
+        --danger: #f87171;
+        --success: #22c55e;
+
+        --bg: #020617;
+        --surface: #0f172a;
+
+        --text: #f8fafc;
+        --text-secondary: #cbd5e1;
+
+        --border: #334155;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 1.5rem 1rem 3rem;
+        position: relative;
+        overflow-y: auto; /* scrollable so keyboard doesn't hide inputs */
+        overflow-x: hidden;
+      }
+    
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(30px, -30px) scale(1.05);
+        }
+        66% {
+          transform: translate(-20px, 20px) scale(0.95);
+        }
+      }
+      .login-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 420px;
+      }
+      .login-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem 2rem;
+        box-shadow: var(--shadow-lg);
+        animation: slideUp 0.5s ease;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .brand {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      span {
+        color: rgb(25, 55, 126);
+      }
+      h1 {
+        color: #3b82f6;
+      }
+
+      .brand-icon img {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 15px -3px #2564eb5c;
+      }
+
+      /*  .brand-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, var(--primary), #818cf8);
+        border-radius: var(--radius);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+      }
+      .brand-icon img {
+  height: 100px;   /* Adjust height 
+  width: auto;    /* Keeps aspect ratio 
+  display: block; /* Removes inline spacing 
+} */
+      .brand h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .brand p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+      .tabs {
+        display: flex;
+        background: var(--bg);
+        border-radius: var(--radius);
+        padding: 4px;
+        margin-bottom: 1.5rem;
+        gap: 4px;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 0.6rem;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+      }
+      .tab-btn.active {
+        background: var(--surface);
+        color: var(--primary);
+        box-shadow: var(--shadow);
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .input-wrap {
+        position: relative;
+      }
+      .input-wrap i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+      .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+      .btn {
+        width: 100%;
+        padding: 0.85rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background:#2563eb;
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px #2564eb33;
+      }
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .alert {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .alert.show {
+        display: flex;
+      }
+      .alert-error {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+      }
+      .alert-success {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+      }
+      [data-theme="dark"] .alert-error {
+        background: #450a0a;
+        border-color: #7f1d1d;
+        color: #fca5a5;
+      }
+      [data-theme="dark"] .alert-success {
+        background: #052e16;
+        border-color: #166534;
+        color: #86efac;
+      }
+      .hint {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 1.25rem;
+      }
+      .hint a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 1.25rem 0;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .guest-btn {
+        background: var(--bg);
+        color: var(--text-secondary);
+        border: 1.5px solid var(--border);
+      }
+      .guest-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: rgba(79, 70, 229, 0.08);
+      }
+      .theme-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+        transition: transform 0.2s;
+      }
+      .theme-toggle:hover {
+        transform: rotate(20deg);
+      }
+      @media (max-width: 480px) {
+        .login-card {
+          padding: 1.75rem 1.25rem;
+        }
+        .blob {
+          display: none;
+        }
+      }
+    </style>
+    <!-- base target removed: caused redirects in new tab -->
+  </head>
+  <body>
+    <!-- Animated background blobs for visual appeal -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Theme toggle button (top right) -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <i class="fas fa-circle-half-stroke"></i>
+    </button>
+
+    <div class="login-container">
+      <div class="login-card">
+        <!-- Brand logo and title -->
+        <div class="brand">
+          <div class="brand-icon">
+            <img src="assets/images/logoquickserve.png" alt="QuickServe Logo" />
+          </div>
+
+          <h1><span>Quick</span>Serve</h1>
+          <p>Canteen Ordering System</p>
+        </div>
+
+        <!-- Tab switcher: Sign In / Create Account -->
+        <div class="tabs">
+          <button
+            class="tab-btn active"
+            onclick="switchAuth('login')"
+            id="tab-login"
+          >
+            Sign In
+          </button>
+          <button
+            class="tab-btn"
+            onclick="switchAuth('register')"
+            id="tab-register"
+          >
+            Create Account
+          </button>
+        </div>
+
+        <!-- Alert box for error/success messages -->
+        <div id="alertBox" class="alert"></div>
+
+        <!-- ==================== LOGIN FORM ==================== -->
+        <!-- Submits to login.php via auth.js handleLogin() -->
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Username or Email</label>
+            <div class="input-wrap">
+              <i class="fas fa-user"></i>
+              <input
+                type="text"
+                class="form-input"
+                id="username"
+                placeholder="admin or customer1"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <i class="fas fa-lock"></i>
+              <input
+                type="password"
+                class="form-input"
+                id="password"
+                placeholder="••••••"
+                required
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="loginBtn">
+            <i class="fas fa-arrow-right"></i> Sign In
+          </button>
+        </form>
+
+        <!-- ==================== REGISTER FORM ==================== -->
+        <!-- Submits to register.php via handleRegister() below -->
+        <form
+          id="registerForm"
+          onsubmit="handleRegister(event)"
+          style="display: none"
+        >
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <div class="input-wrap">
+              <i class="fas fa-id-card"></i>
+              <input
+                type="text"
+                class="form-input"
+                id="regName"
+                placeholder="Juan Dela Cruz"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-wrap">
+              <i class="fas fa-user"></i>
+              <input
+                type="text"
+                class="form-input"
+                id="regUser"
+                placeholder="juan123"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="input-wrap">
+              <i class="fas fa-envelope"></i>
+              <input
+                type="email"
+                class="form-input"
+                id="regEmail"
+                placeholder="juan@email.com"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Phone
+              <small style="font-weight: 400; color: #94a3b8"
+                >(optional)</small
+              ></label
+            >
+            <div class="input-wrap">
+              <i class="fas fa-phone"></i>
+              <input
+                type="tel"
+                class="form-input"
+                id="regPhone"
+                placeholder="0917 123 4567"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <i class="fas fa-lock"></i>
+              <input
+                type="password"
+                class="form-input"
+                id="regPass"
+                placeholder="At least 6 characters"
+                required
+                minlength="6"
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="regBtn">
+            <i class="fas fa-user-plus"></i> Create Account
+          </button>
+        </form>
+
+        <!-- Divider between auth forms and guest option -->
+        <div class="divider">or</div>
+
+        <!-- Guest mode: browse without account -->
+        <button class="btn guest-btn" onclick="continueAsGuest()">
+          <i class="fas fa-user-secret"></i> Continue as Guest
+        </button>
+
+        <!-- Demo credentials hint for capstone presentation -->
+        <!-- <div class="hint">
+          <i class="fas fa-info-circle"></i>
+          Demo: <b>admin</b> / <b>customer1</b> — password: <b>password</b>
+        </div> -->
+      </div>
+    </div>
+
+    <!-- Load API helper and auth logic -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+      // ============================================================
+      // LOGIN PAGE INLINE SCRIPT
+      // Handles: theme toggle, tab switching, registration, guest mode
+      // ============================================================
+
+      /**
+       * Restore saved theme preference from localStorage
+       * Runs immediately on page load
+       */
+      const saved = localStorage.getItem("qs_theme");
+      if (saved) document.documentElement.setAttribute("data-theme", saved);
+
+      /**
+       * toggleTheme()
+       * Switches between light and dark mode
+       * Saves preference to localStorage for persistence across pages
+       */
+      function toggleTheme() {
+        const h = document.documentElement;
+        const n = h.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        h.setAttribute("data-theme", n);
+        localStorage.setItem("qs_theme", n);
+      }
+
+      /**
+       * Check if user is already logged in on page load
+       * If yes, redirect to appropriate dashboard immediately
+       * Prevents logged-in users from seeing login page again
+       */
+      apiGet("login").then((d) => {
+        if (d.success) {
+          localStorage.setItem("qs_user", JSON.stringify(d.user));
+          // Redirect based on role: admin→admin.html, customer→user.html
+          if (d.user.role === "admin") window.location.href = "admin.html";
+          else window.location.href = "user.html";
+        }
+      });
+
+      /**
+       * switchAuth(mode)
+       * Toggles between Login and Register forms
+       * @param {string} mode — 'login' or 'register'
+       */
+      function switchAuth(mode) {
+        // Update tab button styles
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById("tab-" + mode).classList.add("active");
+
+        // Show/hide appropriate form
+        document.getElementById("loginForm").style.display =
+          mode === "login" ? "block" : "none";
+        document.getElementById("registerForm").style.display =
+          mode === "register" ? "block" : "none";
+
+        hideAlert(); // Clear any previous messages
+      }
+
+      /**
+       * showAlert(msg, type)
+       * Displays feedback message in the alert box
+       * @param {string} msg — Message text to display
+       * @param {string} type — 'error' (red) or 'success' (green)
+       */
+      function showAlert(msg, type = "error") {
+        const box = document.getElementById("alertBox");
+        box.className = "alert alert-" + type + " show";
+        box.innerHTML =
+          '<i class="fas fa-' +
+          (type === "error" ? "exclamation-circle" : "check-circle") +
+          '"></i> ' +
+          msg;
+      }
+
+      /**
+       * hideAlert()
+       * Hides the alert message box
+       */
+      function hideAlert() {
+        document.getElementById("alertBox").classList.remove("show");
+      }
+
+      /**
+       * handleRegister(e)
+       * Processes registration form submission
+       * Sends data to register.php via POST
+       * On success: auto-logs in user, redirects to user.html
+       * On failure: shows error message
+       * @param {Event} e — Form submit event
+       */
+      async function handleRegister(e) {
+        e.preventDefault(); // Prevent page reload
+        hideAlert();
+
+        const btn = document.getElementById("regBtn");
+        btn.disabled = true; // Prevent double-submit
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+        try {
+          // Send registration data to backend
+          const res = await apiPost("register", {
+            full_name: document.getElementById("regName").value.trim(),
+            username: document.getElementById("regUser").value.trim(),
+            email: document.getElementById("regEmail").value.trim(),
+            phone: document.getElementById("regPhone").value.trim(),
+            password: document.getElementById("regPass").value,
+          });
+
+          if (res.success) {
+            // Registration successful — show success message then redirect
+            showAlert(
+              "Account created! Welcome, " + res.user.full_name + "!",
+              "success",
+            );
+            setTimeout(() => (window.location.href = "user.html"), 800);
+          } else {
+            // Show server error (duplicate user, validation fail, etc.)
+            showAlert(res.message || "Registration failed");
+          }
+        } catch (err) {
+          // Network/server unreachable
+          showAlert("Network error. Check your connection.");
+        } finally {
+          // Re-enable button regardless of outcome
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+        }
+      }
+
+      /**
+       * continueAsGuest()
+       * Allows browsing without creating an account
+       * Sets guest flag in localStorage and redirects to menu
+       */
+      function continueAsGuest() {
+        localStorage.setItem("qs_guest", "1");
+        window.location.href = "user.html";
+      }
+
+      // Scroll input into view when keyboard opens on mobile
+      document.querySelectorAll(".form-input").forEach((input) => {
+        input.addEventListener("focus", function () {
+          setTimeout(() => {
+            this.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 300); // wait for keyboard to open
+        });
+      });
+    </script>
+  </body>
+</html>

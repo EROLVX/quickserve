@@ -1,0 +1,28 @@
+[data-theme="dark"] {
+  --bg: #020617;
+  --surface: #0F172A;
+  --surface-hover: #172036;
+  --text: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --border: #22304D;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45);
+}
+[data-theme="dark"] .glass {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .auth-page {
+  background: linear-gradient(135deg, #0f172a 0%, #172036 100%);
+}
+[data-theme="dark"] .food-image {
+  background: linear-gradient(135deg, #172036, #0f172a);
+}
+[data-theme="dark"] .category-pill {
+  background: #0F172A;
+  border-color: #22304D;
+}
+[data-theme="dark"] .image-preview {
+  background: #020617;
+  border-color: #22304D;
+}

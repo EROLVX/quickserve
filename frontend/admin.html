@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickServe - Admin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body class="admin-page">
+    <div class="admin-layout">
+      <aside class="sidebar glass" id="adminSidebar">
+        <div class="sidebar-header">
+          <div class="logo"> <img src="assets/images/logoquickserve.png" alt="QuickServe Logo"></i>QuickServe</div>
+          <button
+            class="btn-icon sidebar-close-btn"
+            onclick="closeSidebar()"
+            aria-label="Close sidebar"
+          >
+            <i class="fas fa-arrow-left"></i>
+          </button>
+        </div>
+        <nav class="admin-nav">
+          <button
+            class="nav-item active"
+            onclick="
+              showTab('dashboard');
+              autoCloseSidebar();
+            "
+          >
+            <i class="fas fa-chart-line"></i> Dashboard
+          </button>
+          <button
+            class="nav-item"
+            onclick="
+              showTab('orders');
+              autoCloseSidebar();
+            "
+          >
+            <i class="fas fa-receipt"></i> Orders
+          </button>
+          <button
+            class="nav-item"
+            onclick="
+              showTab('products');
+              autoCloseSidebar();
+            "
+          >
+            <i class="fas fa-utensils"></i> Products
+          </button>
+          <button
+            class="nav-item"
+            onclick="
+              showTab('analytics');
+              autoCloseSidebar();
+            "
+          >
+            <i class="fas fa-chart-pie"></i> Analytics
+          </button>
+          <button
+            class="nav-item"
+            onclick="
+              showTab('accounts');
+              loadUsers();
+              autoCloseSidebar();
+            "
+          >
+            <i class="fas fa-users-cog"></i> Accounts
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="text-light" style="font-size: 0.875rem">
+            <i class="fas fa-user-shield"></i> Logged in as
+          </div>
+          <div id="userDisplay" style="font-weight: 700; margin-bottom: 1rem">
+            Admin
+          </div>
+          <button
+            class="btn btn-ghost btn-sm"
+            id="themeToggle"
+            style="width: 100%; margin-bottom: 0.5rem"
+          >
+            <i class="fas fa-moon"></i> Toggle Theme
+          </button>
+          <button
+            class="btn btn-danger btn-sm"
+            onclick="logout()"
+            style="width: 100%"
+          >
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </aside>
+      <main class="main-content-admin">
+        <button
+          class="mobile-menu-btn"
+          onclick="
+            document.getElementById('adminSidebar').classList.toggle('open')
+          "
+        >
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Dashboard -->
+        <div id="dashboardTab" class="tab-content active">
+          <h2><i class="fas fa-chart-line"></i> Dashboard</h2>
+          <div class="stats-grid">
+            <div class="stat-card primary">
+              <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+              <div class="stat-value" id="statTodayOrders">0</div>
+              <div class="stat-label">Today's Orders</div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-icon"><i class="fas fa-clock"></i></div>
+              <div class="stat-value" id="statPending">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card secondary">
+              <div class="stat-icon"><i class="fas fa-check"></i></div>
+              <div class="stat-value" id="statReady">0</div>
+              <div class="stat-label">Ready</div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-icon"><i class="fas fa-peso-sign"></i></div>
+              <div class="stat-value" id="statRevenue">₱0</div>
+              <div class="stat-label">Revenue Today</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3><i class="fas fa-history"></i> Recent Orders</h3>
+            <div style="overflow-x: auto">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <!-- <th>Customer</th> -->
+                    <th>Type</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <!-- no longer need -->
+                    <!-- <th>Date</th>
+                    <th>Actions</th> -->
+                  </tr>
+                </thead>
+                <tbody id="recentOrdersTable">
+                  <tr>
+                    <td colspan="5" class="text-center">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders -->
+        <div id="ordersTab" class="tab-content">
+          <div class="section-header">
+            <h2><i class="fas fa-receipt"></i> Manage Orders</h2>
+            <!-- filter -->
+            <select
+              id="orderFilter"
+              class="form-select"
+              style="width: auto"
+              onchange="loadAdminOrders()"
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="ready">Ready</option>
+              <option value="completed">Completed</option>
+              <option value="reserved">Reserved (Pending Approval)</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div id="ordersBulkToolbar"></div>
+          <div class="card" style="overflow-x: auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 36px"></th>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Type</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Products -->
+        <div id="productsTab" class="tab-content">
+          <div class="section-header">
+            <h2><i class="fas fa-utensils"></i> Manage Products</h2>
+            <button class="btn btn-primary" onclick="openProductModal()">
+              <i class="fas fa-plus"></i> Add Product
+            </button>
+          </div>
+          <div id="adminProductsGrid" class="product-grid-admin">
+            <div class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading products...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics -->
+        <div id="analyticsTab" class="tab-content">
+          <h2><i class="fas fa-chart-pie"></i> Sales Analytics</h2>
+          <div class="chart-grid">
+            <div class="card">
+              <h3>Daily Sales (Last 7 Days)</h3>
+              <div class="chart-container">
+                <canvas id="dailySalesChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Weekly Revenue</h3>
+              <div class="chart-container">
+                <canvas id="weeklyRevenueChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Popular Products</h3>
+              <div class="chart-container">
+                <canvas id="popularProductsChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Today's Hourly Traffic</h3>
+              <div class="chart-container">
+                <canvas id="hourlyChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 1.5rem">
+            <h3>Order Status Summary</h3>
+            <div class="stats-grid" id="statusSummary"></div>
+          </div>
+        </div>
+
+        <!-- Accounts -->
+        <div id="accountsTab" class="tab-content">
+          <div class="section-header">
+            <h2><i class="fas fa-users-cog"></i> Account Management</h2>
+            <button class="btn btn-primary" onclick="openUserModal()">
+              <i class="fas fa-user-plus"></i> Add Account
+            </button>
+          </div>
+
+          <!-- Filter bar -->
+          <div
+            style="
+              display: flex;
+              gap: 0.75rem;
+              margin-bottom: 1rem;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <input
+              type="text"
+              id="userSearchInput"
+              class="form-input"
+              placeholder="Search name, username, email..."
+              style="max-width: 280px"
+              oninput="filterUsersTable()"
+            />
+            <select
+              id="userRoleFilter"
+              class="form-select"
+              style="width: auto"
+              onchange="filterUsersTable()"
+            >
+              <option value="">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+              <option value="customer">Customer</option>
+            </select>
+            <select
+              id="userStatusFilter"
+              class="form-select"
+              style="width: auto"
+              onchange="filterUsersTable()"
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="card" style="overflow-x: auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr>
+                  <td colspan="7" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal" id="userModal">
+      <div
+        class="modal-content card"
+        style="max-width: 480px; max-height: 90vh; overflow-y: auto"
+      >
+        <div
+          class="modal-header-row"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+          "
+        >
+          <h3 id="userModalTitle" style="margin: 0">
+            <i class="fas fa-user-plus"></i> Add Account
+          </h3>
+          <button class="btn-icon" onclick="closeUserModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input
+            type="text"
+            id="uUsername"
+            class="form-input"
+            placeholder="e.g. juan_dela_cruz"
+            autocomplete="off"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input
+            type="text"
+            id="uFullName"
+            class="form-input"
+            placeholder="e.g. Juan Dela Cruz"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            id="uEmail"
+            class="form-input"
+            placeholder="e.g. juan@email.com"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Password
+            <span
+              id="uPasswordHint"
+              style="
+                display: none;
+                color: var(--text-secondary);
+                font-weight: 400;
+                font-size: 0.78rem;
+              "
+            >
+              — leave blank to keep current</span
+            >
+          </label>
+          <input
+            type="password"
+            id="uPassword"
+            class="form-input"
+            placeholder="Password"
+            autocomplete="new-password"
+          />
+        </div>
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem"
+        >
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="uRole" class="form-select">
+              <option value="customer">Customer</option>
+              <option value="staff">Staff</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="uStatus" class="form-select">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div
+          id="uError"
+          style="
+            display: none;
+            color: var(--danger, #ef4444);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            padding: 0.65rem 1rem;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+          "
+        ></div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="closeUserModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="saveUserBtn"
+            onclick="saveUser()"
+          >
+            <i class="fas fa-save"></i> Save Account
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete User Confirm Modal -->
+    <div class="modal" id="deleteUserModal">
+      <div
+        class="modal-content card"
+        style="max-width: 360px; text-align: center; padding: 2rem"
+      >
+        <div
+          style="
+            font-size: 3rem;
+            color: var(--danger, #ef4444);
+            margin-bottom: 0.75rem;
+          "
+        >
+          <i class="fas fa-user-slash"></i>
+        </div>
+        <h3 style="margin-bottom: 0.5rem">Delete Account?</h3>
+        <p
+          id="deleteUserMsg"
+          style="
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          This cannot be undone.
+        </p>
+        <div style="display: flex; gap: 0.5rem">
+          <button
+            class="btn btn-ghost"
+            onclick="closeDeleteUserModal()"
+            style="flex: 1"
+          >
+            Keep It
+          </button>
+          <button
+            class="btn btn-danger"
+            id="confirmDeleteUserBtn"
+            onclick="confirmDeleteUser()"
+            style="flex: 1"
+          >
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+      <div
+        class="modal-content card"
+        style="max-width: 520px; max-height: 90vh; overflow-y: auto"
+      >
+        <h3 id="productModalTitle">
+          <i class="fas fa-plus-circle"></i> Add Product
+        </h3>
+        <form id="productForm" onsubmit="saveProduct(event)">
+          <input type="hidden" id="productId" />
+          <input type="hidden" id="existingImage" />
+
+          <div class="form-group">
+            <label class="form-label">Product Image</label>
+            <div
+              class="image-preview"
+              id="imagePreview"
+              onclick="document.getElementById('productImage').click()"
+            >
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <input
+              type="file"
+              id="productImage"
+              name="image"
+              accept="image/*"
+              style="display: none"
+            />
+            <small class="text-light">Click to upload image</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input
+              type="text"
+              id="productName"
+              name="name"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select
+              id="productCategory"
+              name="category_id"
+              class="form-select"
+              required
+            ></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea
+              id="productDesc"
+              name="description"
+              class="form-input"
+              rows="2"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (₱)</label>
+            <input
+              type="number"
+              step="0.01"
+              id="productPrice"
+              name="price"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="productStatus" name="status" class="form-select">
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="closeProductModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Save Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <!-- Order Detail Modal -->
+    <div class="modal" id="orderDetailModal">
+      <div class="modal-content card" style="max-width: 500px">
+        <div class="modal-header-row">
+          <h3><i class="fas fa-file-invoice"></i> Order Details</h3>
+          <button class="btn-icon" onclick="closeOrderDetail()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-row">
+            <span class="text-light">Order Number</span
+            ><strong id="detailOrderNum">-</strong>
+          </div>
+          <div class="detail-row">
+            <span class="text-light">Customer</span
+            ><span id="detailCustomer">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="text-light">Type</span><span id="detailType">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="text-light">Status</span
+            ><span id="detailStatus">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="text-light">Time</span><span id="detailTime">-</span>
+          </div>
+        </div>
+
+        <!-- Reservation Info (hidden by default) -->
+        <div
+          id="detailReservationInfo"
+          class="reservation-detail-box"
+          style="display: none"
+        >
+          <h4><i class="fas fa-calendar-check"></i> Reservation Details</h4>
+          <div class="reservation-row">
+            <span class="label">Date</span>
+            <span class="value" id="detailResDate">-</span>
+          </div>
+          <div class="reservation-row">
+            <span class="label">Time</span>
+            <span class="value" id="detailResTime">-</span>
+          </div>
+          <div class="reservation-row">
+            <span class="label">Downpayment Paid</span>
+            <span class="value" id="detailDownpayment">-</span>
+          </div>
+          <div class="reservation-row">
+            <span class="label">Remaining Balance</span>
+            <span class="value balance" id="detailBalance">-</span>
+          </div>
+          <div class="reservation-row">
+            <span class="label">Admin Notes</span>
+            <span class="value" id="detailAdminNotes">-</span>
+          </div>
+        </div>
+
+        <h4 class="detail-section-title">Items</h4>
+        <div class="order-items-list" id="detailItems"></div>
+
+        <div class="detail-total-row">
+          <span>Total</span>
+          <span id="detailTotal">₱0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/analytics.js"></script>
+
+    <script>
+      /* ============================================================
+       ACCOUNT MANAGEMENT  — admin.html
+    ============================================================ */
+      let usersCache = [];
+      let editingUserId = null;
+      let pendingDeleteUserId = null;
+
+      async function loadUsers() {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+        try {
+          const res = await apiGet("users");
+          if (res.success) {
+            usersCache = res.users;
+            renderUsersTable(res.users);
+          } else {
+            tbody.innerHTML =
+              '<tr><td colspan="7" class="text-center text-light">' +
+              (res.message || "Failed to load users") +
+              "</td></tr>";
+          }
+        } catch (e) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="text-center text-light">Network error</td></tr>';
+        }
+      }
+
+      function renderUsersTable(users) {
+        const tbody = document.getElementById("usersTableBody");
+        if (!users.length) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="text-center text-light">No accounts found</td></tr>';
+          return;
+        }
+        const roleBadge = {
+          admin:
+            '<span class="badge badge-reserved"><i class="fas fa-shield-alt"></i> Admin</span>',
+          staff:
+            '<span class="badge badge-pending"><i class="fas fa-id-badge"></i> Staff</span>',
+          customer:
+            '<span class="badge badge-cancelled"><i class="fas fa-user"></i> Customer</span>',
+        };
+        const statusBadge = {
+          active:
+            '<span class="badge badge-approved"><i class="fas fa-circle" style="font-size:0.45rem"></i> Active</span>',
+          inactive:
+            '<span class="badge badge-rejected"><i class="fas fa-circle" style="font-size:0.45rem"></i> Inactive</span>',
+        };
+        tbody.innerHTML = users
+          .map(
+            (u) => `
+        <tr>
+          <td><strong>${escapeHtml(u.username)}</strong></td>
+          <td>${escapeHtml(u.full_name || "—")}</td>
+          <td class="text-light" style="font-size:0.85rem">${escapeHtml(u.email || "—")}</td>
+          <td>${roleBadge[u.role] || u.role}</td>
+          <td>${statusBadge[u.status] || u.status}</td>
+          <td class="text-light" style="font-size:0.82rem">${u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}</td>
+          <td>
+            <button class="btn btn-sm btn-ghost" onclick="openEditUserModal(${u.id})" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="promptDeleteUser(${u.id}, '${escapeHtml(u.username)}')" title="Delete" style="margin-left:0.25rem"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `,
+          )
+          .join("");
+      }
+
+      function filterUsersTable() {
+        const search = (
+          document.getElementById("userSearchInput")?.value || ""
+        ).toLowerCase();
+        const role = document.getElementById("userRoleFilter")?.value || "";
+        const status = document.getElementById("userStatusFilter")?.value || "";
+        const filtered = usersCache.filter((u) => {
+          const matchSearch =
+            !search ||
+            (u.username || "").toLowerCase().includes(search) ||
+            (u.full_name || "").toLowerCase().includes(search) ||
+            (u.email || "").toLowerCase().includes(search);
+          const matchRole = !role || u.role === role;
+          const matchStatus = !status || u.status === status;
+          return matchSearch && matchRole && matchStatus;
+        });
+        renderUsersTable(filtered);
+      }
+
+      function openUserModal() {
+        editingUserId = null;
+        document.getElementById("userModalTitle").innerHTML =
+          '<i class="fas fa-user-plus"></i> Add Account';
+        document.getElementById("uUsername").value = "";
+        document.getElementById("uUsername").disabled = false;
+        document.getElementById("uFullName").value = "";
+        document.getElementById("uEmail").value = "";
+        document.getElementById("uPassword").value = "";
+        document.getElementById("uPasswordHint").style.display = "none";
+        document.getElementById("uRole").value = "customer";
+        document.getElementById("uStatus").value = "active";
+        document.getElementById("uError").style.display = "none";
+        document.getElementById("userModal").classList.add("open");
+      }
+
+      function openEditUserModal(id) {
+        const user = usersCache.find((u) => u.id === id);
+        if (!user) return;
+        editingUserId = id;
+        document.getElementById("userModalTitle").innerHTML =
+          '<i class="fas fa-user-edit"></i> Edit Account';
+        document.getElementById("uUsername").value = user.username;
+        document.getElementById("uUsername").disabled = true;
+        document.getElementById("uFullName").value = user.full_name || "";
+        document.getElementById("uEmail").value = user.email || "";
+        document.getElementById("uPassword").value = "";
+        document.getElementById("uPasswordHint").style.display = "inline";
+        document.getElementById("uRole").value = user.role;
+        document.getElementById("uStatus").value = user.status;
+        document.getElementById("uError").style.display = "none";
+        document.getElementById("userModal").classList.add("open");
+      }
+
+      function closeUserModal() {
+        document.getElementById("userModal").classList.remove("open");
+        editingUserId = null;
+      }
+
+      async function saveUser() {
+        const errEl = document.getElementById("uError");
+        errEl.style.display = "none";
+        const username = document.getElementById("uUsername").value.trim();
+        const fullName = document.getElementById("uFullName").value.trim();
+        const email = document.getElementById("uEmail").value.trim();
+        const password = document.getElementById("uPassword").value;
+        const role = document.getElementById("uRole").value;
+        const status = document.getElementById("uStatus").value;
+
+        if (!fullName || !email) {
+          errEl.textContent = "Full name and email are required.";
+          errEl.style.display = "block";
+          return;
+        }
+        if (!editingUserId && (!username || !password)) {
+          errEl.textContent =
+            "Username and password are required for new accounts.";
+          errEl.style.display = "block";
+          return;
+        }
+
+        const btn = document.getElementById("saveUserBtn");
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        try {
+          let res;
+          if (editingUserId) {
+            const payload = {
+              id: editingUserId,
+              full_name: fullName,
+              email,
+              role,
+              status,
+            };
+            if (password) payload.password = password;
+            res = await apiPut("users", payload);
+          } else {
+            res = await apiPost("users", {
+              username,
+              full_name: fullName,
+              email,
+              password,
+              role,
+              status,
+            });
+          }
+          if (res.success) {
+            showToast(
+              editingUserId ? "Account updated" : "Account created",
+              "fa-check-circle",
+            );
+            closeUserModal();
+            loadUsers();
+          } else {
+            errEl.textContent = res.message || "Failed to save account.";
+            errEl.style.display = "block";
+          }
+        } catch (e) {
+          errEl.textContent = "Network error. Please try again.";
+          errEl.style.display = "block";
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = orig;
+        }
+      }
+
+      function promptDeleteUser(id, username) {
+        pendingDeleteUserId = id;
+        document.getElementById("deleteUserMsg").textContent =
+          'Delete account "' + username + '"? This cannot be undone.';
+        document.getElementById("deleteUserModal").classList.add("open");
+      }
+      function closeDeleteUserModal() {
+        document.getElementById("deleteUserModal").classList.remove("open");
+        pendingDeleteUserId = null;
+      }
+      async function confirmDeleteUser() {
+        if (!pendingDeleteUserId) return;
+        const btn = document.getElementById("confirmDeleteUserBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+          const res = await apiDelete("users", pendingDeleteUserId);
+          if (res.success) {
+            showToast("Account deleted", "fa-check-circle");
+            closeDeleteUserModal();
+            loadUsers();
+          } else {
+            showToast(
+              res.message || "Failed to delete",
+              "fa-exclamation-circle",
+            );
+          }
+        } catch (e) {
+          showToast("Network error", "fa-exclamation-circle");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+          closeDeleteUserModal();
+        }
+      }
+
+      // Close modals on backdrop click
+      document.addEventListener("click", (e) => {
+        if (e.target.id === "userModal") closeUserModal();
+        if (e.target.id === "deleteUserModal") closeDeleteUserModal();
+      });
+    </script>
+  </body>
+</html>
